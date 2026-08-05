@@ -46,7 +46,7 @@ export class UsersService {
       where: { id },
     });
     if (!user) {
-      throw new NotFoundException(`User với id ${id} không tồn tại`);
+      throw new NotFoundException(`User không tồn tại`);
     }
     return user;
   }

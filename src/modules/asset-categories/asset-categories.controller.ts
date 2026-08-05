@@ -33,6 +33,11 @@ export class AssetCategoriesController {
 
   @Delete(':id')
   remove(@Param('id') id: number) {
-    return this.assetCategoriesService.remove(+id);
+    return this.assetCategoriesService.remove(id);
+  }
+
+  @Patch(':id/restore')
+  restore(@Param('id') id: number) {
+    return this.assetCategoriesService.restore(id);
   }
 }

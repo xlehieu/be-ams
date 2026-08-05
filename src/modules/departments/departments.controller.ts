@@ -1,8 +1,14 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { DepartmentsService } from './departments.service';
 import { CreateDepartmentDto } from './dto/create-department.dto';
 import { UpdateDepartmentDto } from './dto/update-department.dto';
+import { ALL_ROLES, Roles } from '@/decorators/role.decoratetor';
+import { USER_ROLE } from '@/enums/user-role.enum';
+import { CurrentUser } from '@/decorators/currentUser.decorator';
+import type { CurrentUserType } from '@/@types/auth.type';
+import { ListQueryDto } from '@/shared/query.dto';
 
+@Roles(USER_ROLE.ADMIN)
 @Controller('departments')
 export class DepartmentsController {
   constructor(private readonly departmentsService: DepartmentsService) {}
@@ -13,13 +19,16 @@ export class DepartmentsController {
   }
 
   @Get()
-  findAll() {
-    return this.departmentsService.findAll();
+  @Roles(USER_ROLE.ADMIN,USER_ROLE.MANAGER)
+  findAll(@Query() query:ListQueryDto) {
+    console.log("queryqueryqueryquery",query)
+    return this.departmentsService.findAll(query);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: number) {
-    return this.departmentsService.findOne(+id);
+  @Roles(ALL_ROLES)
+  findById(@Param('id') id: number, @CurrentUser() curUser:CurrentUserType) {
+    return this.departmentsService.findById(id,curUser);
   }
 
   @Patch(':id')
@@ -29,6 +38,11 @@ export class DepartmentsController {
 
   @Delete(':id')
   remove(@Param('id') id: number) {
-    return this.departmentsService.remove(+id);
+    return this.departmentsService.remove(id);
+  }
+
+  @Patch(':id/restore')
+  restore(@Param('id') id: number) {
+    return this.departmentsService.restore(id);
   }
 }

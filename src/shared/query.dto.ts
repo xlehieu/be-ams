@@ -16,6 +16,7 @@ export class ListQueryDto {
   page_size:number = 10;
 
   @ApiPropertyOptional({ example: '' })
+  @Type(() => String)
   @IsOptional()
   @IsString()
   keyword?: string;

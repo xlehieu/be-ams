@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty, IsOptional, IsString } from "class-validator";
+import { IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
 
 export class CreateDepartmentDto {
     @IsNotEmpty({ message: "Tên phòng ban không được để trống" })
@@ -13,6 +13,6 @@ export class CreateDepartmentDto {
     department_code: string;
 
     @IsOptional()
-    @IsString({ message: "Mã phòng ban cha phải là một chuỗi" })
-    parent_id?: string;
+    @IsNumber({},{ message: "Mã phòng ban cha phải là một số" })
+    parent_id?: number;
 }

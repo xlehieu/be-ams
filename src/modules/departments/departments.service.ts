@@ -1,30 +1,93 @@
-import { Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateDepartmentDto } from './dto/create-department.dto';
 import { UpdateDepartmentDto } from './dto/update-department.dto';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Department } from './entities/department.entity';
+import { CurrentUserType } from '@/@types/auth.type';
+import { USER_ROLE } from '@/enums/user-role.enum';
+import { UsersService } from '../users/users.service';
+import { ListQueryDto } from '@/shared/query.dto';
+import { buildPagination } from '@/shared/buildPagination';
 
 @Injectable()
 export class DepartmentsService {
-  constructor(@InjectRepository(Department) private readonly departmentRepository: Repository<Department>) {}
+  constructor(
+    @InjectRepository(Department)
+    private readonly departmentRepository: Repository<Department>,
+    private readonly userService: UsersService,
+  ) {}
   create(createDepartmentDto: CreateDepartmentDto) {
     return this.departmentRepository.save(createDepartmentDto);
   }
 
-  findAll() {
-    return this.departmentRepository.find();
+  async findAll(query: ListQueryDto) {
+
+    const qb = this.departmentRepository.createQueryBuilder("department")
+
+    if(query.keyword){
+      qb.andWhere("department.name ILIKE :keyword OR department.department_code ILIKE :keyword",{
+        keyword:`%${query.keyword}`
+      })
+    }
+     qb.orderBy('department.updated_at', 'DESC')
+      .orderBy('department.id', 'DESC')
+      .skip(query.offset)
+      .take(query.page_size);
+      const [data,total]=await qb.getManyAndCount()
+    return buildPagination(data, total, query.page, query.page_size);
   }
 
   findOne(id: number) {
     return this.departmentRepository.findOne({ where: { id } });
   }
+  async findById(id: number, curUser: CurrentUserType) {
+    const department = await this.departmentRepository.findOne({
+      where: { id },
+    });
+    if (curUser.role !== USER_ROLE.USER) {
+      return department;
+    }
+    const user = await this.userService.findById(curUser.id, curUser);
+    if (user.department_id !== department?.id) {
+      throw new ForbiddenException('Không có quyền truy cập');
+    }
+    return department;
+  }
+  async update(id: number, updateDepartmentDto: UpdateDepartmentDto) {
+    const result = await this.departmentRepository.update(id, updateDepartmentDto);
+    if(result.affected===0){
+      throw new NotFoundException()
+    }
+    return await this.departmentRepository.findOne({
+      where:{
+        id
+      }
+    })
 
-  update(id: number, updateDepartmentDto: UpdateDepartmentDto) {
-    return this.departmentRepository.update(id, updateDepartmentDto);
   }
 
-  remove(id: number) {
-    return this.departmentRepository.delete(id);
+  async remove(id: number) {
+    const result = await this.departmentRepository.softDelete(id);
+    if (result.affected === 0) {
+      throw new NotFoundException();
+    }
+    return {
+      message: 'Xóa phòng ban thành công',
+    };
+  }
+
+  async restore(id: number) {
+    const result = await this.departmentRepository.restore(id);
+    if (result.affected === 0) {
+      throw new NotFoundException();
+    }
+    return {
+      message: 'Khôi phục phòng ban thành công',
+    };
   }
 }

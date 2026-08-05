@@ -92,4 +92,13 @@ export class AssetCategoriesService {
       message: 'Xóa danh mục thành công',
     };
   }
+  async restore(id: number) {
+    const result = await this.assetCategoryRepository.restore(id);
+    if (result.affected === 0) {
+      throw new NotFoundException();
+    }
+    return {
+      message: 'Khôi phục danh mục mục thành công',
+    };
+  }
 }
