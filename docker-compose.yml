@@ -11,28 +11,7 @@ services:
       - '${POSTGRES_PORT}:5432'
     volumes:
       - pgdata:/var/lib/postgresql/data
-    networks:
-      - ams-network
 
-  pgadmin:
-    image: dpage/pgadmin4:latest
-    restart: always
-    environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
-    ports:
-      - '${PGADMIN_PORT}:80'
-    depends_on:
-      - postgres
-    volumes:
-      - pgadmin-data:/var/lib/pgadmin
-    networks:
-      - ams-network
 
 volumes:
   pgdata:
-  pgadmin-data:
-
-networks:
-  ams-network:
-    driver: bridge

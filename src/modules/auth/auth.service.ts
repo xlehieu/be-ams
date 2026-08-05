@@ -8,7 +8,8 @@ import * as bcrypt from 'bcrypt';
 import { User } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
 import { RegisterDto } from './dto/auth.dto';
-import { UserPayloadSign } from '@/@types/auth.type';
+import { CurrentUserType } from '@/@types/auth.type';
+import { CreateUserDto } from '../users/dto/create-user.dto';
 @Injectable()
 export class AuthService {
   constructor(
@@ -16,7 +17,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async register(registerDto: RegisterDto) {
+  async register(registerDto: RegisterDto,curUser:CurrentUserType) {
     const existUser = await this.usersService.findOne({
       where: { email: registerDto.email },
     });
@@ -25,13 +26,14 @@ export class AuthService {
         'Email đã tồn tại, vui lòng sử dụng email khác',
       );
     }
-    const createdUser = await this.usersService.create(registerDto);
     const saltRounds = 10;
-    const passwordHash = await bcrypt.hash(registerDto.password, saltRounds);
-    createdUser.password_hash = passwordHash;
-    return this.usersService.update(createdUser.id, {
-      password_hash: passwordHash,
-    });
+    const password_hash = await bcrypt.hash(registerDto.password, saltRounds);
+    const newUser:CreateUserDto ={
+      ...registerDto,
+      password_hash      
+    } 
+    const createdUser = await this.usersService.create(newUser,curUser);
+    return createdUser
   }
 
   async validateUser(email: string, password: string) {
@@ -48,7 +50,7 @@ export class AuthService {
     throw new NotFoundException('Email hoặc mật khẩu không đúng');
   }
   async login(user: User) {
-    const payload: UserPayloadSign = {
+    const payload: CurrentUserType = {
       email: user.email,
       id: user.id,
       role: user.role,

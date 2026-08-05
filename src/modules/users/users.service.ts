@@ -1,10 +1,16 @@
 // users/users.service.ts
-import { Injectable, NotFoundException } from '@nestjs/common';
+import type { CurrentUserType } from '@/@types/auth.type';
+import { USER_ROLE } from '@/enums/user-role.enum';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOneOptions, Repository } from 'typeorm';
-import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { User } from './entities/user.entity';
 
 @Injectable()
 export class UsersService {
@@ -13,7 +19,13 @@ export class UsersService {
     private readonly userRepository: Repository<User>,
   ) {}
 
-  create(createUserDto: CreateUserDto) {
+  create(createUserDto: CreateUserDto, curUser: CurrentUserType) {
+    if (
+      createUserDto.role === USER_ROLE.ADMIN &&
+      curUser.role !== USER_ROLE.ADMIN
+    ) {
+      throw new ForbiddenException('Không có quyền thực hiện');
+    }
     const user = this.userRepository.create(createUserDto);
     return this.userRepository.save(user);
   }
@@ -22,13 +34,16 @@ export class UsersService {
     return this.userRepository.find();
   }
 
-  async findOne(options: FindOneOptions<User>) {
+  async findOne(options: FindOneOptions<User>,) {    
     return this.userRepository.findOne(options);
   }
 
-  async findById(id: number) {
+  async findById(id: number, curUser: CurrentUserType) {
+    if (curUser.role === USER_ROLE.USER && curUser.id !== id) {
+      throw new ForbiddenException();
+    }
     const user = await this.userRepository.findOne({
-      where:{id}
+      where: { id },
     });
     if (!user) {
       throw new NotFoundException(`User với id ${id} không tồn tại`);
@@ -36,13 +51,21 @@ export class UsersService {
     return user;
   }
 
-  async update(id: number, updateUserDto: UpdateUserDto) {
+  async update(id: number, updateUserDto: UpdateUserDto, curUser: CurrentUserType) {
+    if (curUser.role === USER_ROLE.USER && curUser.id !== id) {
+      throw new ForbiddenException();
+    }
     await this.userRepository.update(id, updateUserDto);
-    return this.findById(id);
+    return this.findById(id,curUser);
   }
 
   async remove(id: number) {
-    await this.findById(id); // check tồn tại trước khi xóa, tự throw nếu không có
-    return this.userRepository.delete(id);
+    const result = await this.userRepository.softDelete(id);
+    if(result.affected===0){
+      throw new NotFoundException()
+    }
+    return {
+      message:"Xóa user thành công"
+    }
   }
 }

@@ -1,6 +1,7 @@
-import { UserRole } from "@/enums/user-role.enum";
+import { USER_ROLE } from "@/enums/user-role.enum";
+import { Department } from "@/modules/departments/entities/department.entity";
 import { Exclude } from "class-transformer";
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 @Entity("users")
 export class User  {
@@ -16,10 +17,10 @@ export class User  {
     
     @Column({
         type:"enum",
-        enum: UserRole,
-        default:UserRole.USER
+        enum: USER_ROLE,
+        default:USER_ROLE.USER
     })
-    role:UserRole
+    role:USER_ROLE
 
     @Column({ unique: true })
     email: string;
@@ -27,4 +28,20 @@ export class User  {
     @Exclude()
     @Column()
     password_hash: string;
+
+    @ManyToOne(()=>Department,{onDelete:"SET NULL"})
+    @JoinColumn({name:"department_id"})
+    department:Department
+
+    @Column({name:"department_id",nullable:true})
+    department_id:number
+
+    @CreateDateColumn()
+    created_at:Date
+
+    @UpdateDateColumn()
+    updated_at:Date
+
+    @DeleteDateColumn()
+    deleted_at:Date
 }

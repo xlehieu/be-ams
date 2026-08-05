@@ -11,7 +11,7 @@ export class Department {
     @Column({ unique: true })
     department_code: string;
 
-    @Column({ unique: true,nullable: true })
+    @Column({ nullable: true })
     parent_id: string;
 
     @CreateDateColumn()

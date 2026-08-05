@@ -11,17 +11,17 @@ import {
 import { AuthService } from './auth.service';
 import { LoginDto, RegisterDto } from './dto/auth.dto';
 import { ApiBody } from '@nestjs/swagger';
-import { CurrentUser } from '@/decorators/currentUser.decorator';
 import { User } from '../users/entities/user.entity';
+import { CurrentUser } from '@/decorators/currentUser.decorator';
+import type { CurrentUserType } from '@/@types/auth.type';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('register')
-  @Public()
-  register(@Body() registerDto: RegisterDto) {
-    return this.authService.register(registerDto);
+  register(@Body() registerDto: RegisterDto,@CurrentUser() curUser:CurrentUserType) {
+    return this.authService.register(registerDto,curUser);
   }
 
   @Post('login')

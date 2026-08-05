@@ -14,6 +14,7 @@ import { PassportModule } from '@nestjs/passport';
   controllers: [AuthController],
   providers: [
     {
+      // dùng APP_GUARD nó tự áp dụng cho global luôn
       provide: APP_GUARD,
       useClass: AuthGuard,
     },

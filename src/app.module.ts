@@ -4,6 +4,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DepartmentsModule } from './modules/departments/departments.module';
+import { AssetCategoriesModule } from './modules/asset-categories/asset-categories.module';
 
 @Module({
   imports: [
@@ -23,13 +24,14 @@ import { DepartmentsModule } from './modules/departments/departments.module';
         database: configService.get<string>('DB_NAME'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
         synchronize: configService.get<string>('NODE_ENV') === 'development' ? true : false,
-        logging: true,
+        // logging: true,
         autoLoadEntities: true,
       }),
     }),
     AuthModule,
     UsersModule,
-    DepartmentsModule
+    DepartmentsModule,
+    AssetCategoriesModule,
   ],
   controllers: [],
   providers: [],
