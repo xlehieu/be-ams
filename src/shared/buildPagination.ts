@@ -1,6 +1,6 @@
 export interface PaginationResult<T> {
   data: T[];
-  meta: {
+  pagination: {
     total: number;
     page: number;
     page_size: number;
@@ -20,7 +20,7 @@ export function buildPagination<T>(
 
   return {
     data,
-    meta: {
+    pagination: {
       total,
       page,
       page_size,

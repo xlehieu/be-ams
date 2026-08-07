@@ -10,11 +10,14 @@ import { UsersService } from '../users/users.service';
 import { RegisterDto } from './dto/auth.dto';
 import { CurrentUserType } from '@/@types/auth.type';
 import { CreateUserDto } from '../users/dto/create-user.dto';
+import { RedisService } from '../redis/redis.service';
+import { CACHE_SCOPE } from '@/shared/cache-scope.const';
 @Injectable()
 export class AuthService {
   constructor(
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
+    private readonly redisService: RedisService
   ) {}
 
   async register(registerDto: RegisterDto,curUser:CurrentUserType) {
@@ -60,13 +63,19 @@ export class AuthService {
     };
   }
   async getProfile(userId: number) {
-    const user = await this.usersService.findOne({
+    const cache = await this.redisService.get(CACHE_SCOPE.AUTH,`profile:${userId}`)
+    if(cache){
+      return cache
+    }
+    const result = await this.usersService.findOne({
       where: { id: userId },
     });
-    if (!user) {
+    if (!result) {
       throw new NotFoundException('Người dùng không tồn tại');
     }
-    // instance của User => tự bỏ password_hash
+    const {password_hash,...user}=result
+    await this.redisService.set(CACHE_SCOPE.AUTH,`profile:${userId}`,user)
+    // instance của User => tự bỏ password_hash đã dùng ở main.ts
     return user;
   }
 }

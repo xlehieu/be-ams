@@ -2,6 +2,7 @@ import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { BuildResponseInterceptor } from './interceptors/build-response.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -12,7 +13,9 @@ async function bootstrap() {
       whitelist: true,
     }),
   );
+  //dùng thằng này giúp tự động lọc các field dựa trên decorator entity và dto
   app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
+  app.useGlobalInterceptors(new BuildResponseInterceptor());
   const config = new DocumentBuilder()
     .setTitle('AMS API')
     .setDescription('Asset Management System - API Documentation')

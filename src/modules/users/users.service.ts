@@ -11,12 +11,15 @@ import { FindOneOptions, Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
+import { RedisService } from '../redis/redis.service';
+import { CACHE_SCOPE } from '@/shared/cache-scope.const';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    private readonly redisService: RedisService
   ) {}
 
   create(createUserDto: CreateUserDto, curUser: CurrentUserType) {
@@ -42,12 +45,18 @@ export class UsersService {
     if (curUser.role === USER_ROLE.USER && curUser.id !== id) {
       throw new ForbiddenException();
     }
-    const user = await this.userRepository.findOne({
+    const cache = await this.redisService.get<User>(CACHE_SCOPE.USER,`detail:${id}`)
+    if(cache){
+      return cache
+    }
+    const result = await this.userRepository.findOne({
       where: { id },
     });
-    if (!user) {
+    if (!result) {
       throw new NotFoundException(`User không tồn tại`);
     }
+    const {password_hash,...user}=result
+    await this.redisService.set(CACHE_SCOPE.USER,`detail:${id}`,user)
     return user;
   }
 
@@ -56,6 +65,8 @@ export class UsersService {
       throw new ForbiddenException();
     }
     await this.userRepository.update(id, updateUserDto);
+    await this.redisService.bumpVersion(CACHE_SCOPE.USER,`detail:${id}`)
+    await this.redisService.bumpVersion(CACHE_SCOPE.AUTH,`profile:${id}`)
     return this.findById(id,curUser);
   }
 

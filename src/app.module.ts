@@ -5,6 +5,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DepartmentsModule } from './modules/departments/departments.module';
 import { AssetCategoriesModule } from './modules/asset-categories/asset-categories.module';
+import { RedisModule } from './modules/redis/redis.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { AssetCategoriesModule } from './modules/asset-categories/asset-categori
     UsersModule,
     DepartmentsModule,
     AssetCategoriesModule,
+    RedisModule,
   ],
   controllers: [],
   providers: [],
