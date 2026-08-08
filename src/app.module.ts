@@ -6,6 +6,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { DepartmentsModule } from './modules/departments/departments.module';
 import { AssetCategoriesModule } from './modules/asset-categories/asset-categories.module';
 import { RedisModule } from './modules/redis/redis.module';
+import { KafkaModule } from './modules/kafka/kafka.module';
+import { MailModule } from './modules/mail/mail.module';
 
 @Module({
   imports: [
@@ -34,6 +36,8 @@ import { RedisModule } from './modules/redis/redis.module';
     DepartmentsModule,
     AssetCategoriesModule,
     RedisModule,
+    KafkaModule,
+    MailModule,
   ],
   controllers: [],
   providers: [],

@@ -9,6 +9,7 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { LocalStrategy } from '@/guard/local.strategy';
 import { PassportModule } from '@nestjs/passport';
+import { KafkaModule } from '../kafka/kafka.module';
 
 @Module({
   controllers: [AuthController],
@@ -36,6 +37,7 @@ import { PassportModule } from '@nestjs/passport';
     }),
     PassportModule,
     UsersModule,
+    KafkaModule
   ],
 })
 export class AuthModule {}

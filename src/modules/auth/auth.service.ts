@@ -12,12 +12,16 @@ import { CurrentUserType } from '@/@types/auth.type';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { RedisService } from '../redis/redis.service';
 import { CACHE_SCOPE } from '@/shared/cache-scope.const';
+import { ProducerService } from '../kafka/producer.service';
+import { ConfigService } from '@nestjs/config';
 @Injectable()
 export class AuthService {
   constructor(
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
-    private readonly redisService: RedisService
+    private readonly configService: ConfigService,
+    private readonly redisService: RedisService,
+    private readonly producerService: ProducerService
   ) {}
 
   async register(registerDto: RegisterDto,curUser:CurrentUserType) {
@@ -29,13 +33,19 @@ export class AuthService {
         'Email đã tồn tại, vui lòng sử dụng email khác',
       );
     }
-    const saltRounds = 10;
-    const password_hash = await bcrypt.hash(registerDto.password, saltRounds);
+    const saltRounds = this.configService.get<string>("SALT_BCRYPT") as string;
+    const password_hash = await bcrypt.hash(registerDto.password, Number(saltRounds));
     const newUser:CreateUserDto ={
       ...registerDto,
       password_hash      
     } 
     const createdUser = await this.usersService.create(newUser,curUser);
+    this.producerService.produce({
+      topic:"register-success",
+      messages: [
+        { value: JSON.stringify(createdUser) },
+      ],
+    })
     return createdUser
   }
 
@@ -43,6 +53,7 @@ export class AuthService {
     const user = await this.usersService.findOne({
       where: { email },
     });
+    if(!user) throw new NotFoundException('Email hoặc mật khẩu không đúng');
     const paswordMatch = user
       ? await bcrypt.compare(password, user.password_hash)
       : false;
