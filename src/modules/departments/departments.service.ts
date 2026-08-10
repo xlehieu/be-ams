@@ -26,49 +26,67 @@ export class DepartmentsService {
   }
 
   async findAll(query: ListQueryDto) {
+    const qb = this.departmentRepository.createQueryBuilder('department');
 
-    const qb = this.departmentRepository.createQueryBuilder("department")
-
-    if(query.keyword){
-      qb.andWhere("department.name ILIKE :keyword OR department.department_code ILIKE :keyword",{
-        keyword:`%${query.keyword}`
-      })
+    if (query.keyword) {
+      qb.andWhere(
+        'department.name ILIKE :keyword OR department.department_code ILIKE :keyword',
+        {
+          keyword: `%${query.keyword}`,
+        },
+      );
     }
-     qb.orderBy('department.updated_at', 'DESC')
+    qb.orderBy('department.updated_at', 'DESC')
       .orderBy('department.id', 'DESC')
       .skip(query.offset)
       .take(query.page_size);
-      const [data,total]=await qb.getManyAndCount()
+    const [data, total] = await qb.getManyAndCount();
     return buildPagination(data, total, query.page, query.page_size);
   }
 
-  findOne(id: number) {
-    return this.departmentRepository.findOne({ where: { id } });
-  }
+  // findOne(id: number) {
+  //   return this.departmentRepository.findOne({ where: { id } });
+  // }
   async findById(id: number, curUser: CurrentUserType) {
     const department = await this.departmentRepository.findOne({
       where: { id },
+      relations: {
+        users: true,
+      },
+      select: {
+        id: true,
+        name: true,
+        department_code: true,
+        users: {
+          id: true,
+          name: true,
+        },
+      },
     });
-    if (curUser.role !== USER_ROLE.USER) {
+    if (!department) {
+      throw new NotFoundException('Không tìm thấy phòng ban');
+    }
+    if (curUser.role === USER_ROLE.ADMIN) {
       return department;
     }
-    const user = await this.userService.findById(curUser.id, curUser);
-    if (user.department_id !== department?.id) {
+    if (curUser.department_id !== department?.id) {
       throw new ForbiddenException('Không có quyền truy cập');
     }
     return department;
   }
   async update(id: number, updateDepartmentDto: UpdateDepartmentDto) {
-    const result = await this.departmentRepository.update(id, updateDepartmentDto);
-    if(result.affected===0){
-      throw new NotFoundException()
+    const result = await this.departmentRepository.update(
+      id,
+      updateDepartmentDto,
+    );
+    if (result.affected === 0) {
+      throw new NotFoundException();
     }
     return await this.departmentRepository.findOne({
-      where:{
-        id
-      }
-    })
-
+      where: {
+        id,
+      },
+    });
   }
 
   async remove(id: number) {

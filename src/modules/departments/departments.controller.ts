@@ -33,7 +33,7 @@ export class DepartmentsController {
 
   @Patch(':id')
   update(@Param('id') id: number, @Body() updateDepartmentDto: UpdateDepartmentDto) {
-    return this.departmentsService.update(+id, updateDepartmentDto);
+    return this.departmentsService.update(id, updateDepartmentDto);
   }
 
   @Delete(':id')

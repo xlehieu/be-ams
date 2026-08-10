@@ -1,6 +1,6 @@
 import type { CurrentUserType } from '@/@types/auth.type';
 import { CurrentUser } from '@/decorators/currentUser.decorator';
-import { Roles } from '@/decorators/role.decoratetor';
+import { ALL_ROLES, Roles } from '@/decorators/role.decoratetor';
 import { USER_ROLE } from '@/enums/user-role.enum';
 import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -29,7 +29,7 @@ export class UsersController {
   }
 
   @Patch(':id')
-  @Roles(USER_ROLE.ADMIN,USER_ROLE.MANAGER)
+  @Roles(ALL_ROLES)
   update(@Param('id') id: number, @Body() updateUserDto: UpdateUserDto,@CurrentUser() curUser:CurrentUserType) {
     return this.usersService.update(id, updateUserDto,curUser);
   }

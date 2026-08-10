@@ -1,4 +1,5 @@
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { User } from "@/modules/users/entities/user.entity";
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 @Entity("departments")
 export class Department {
@@ -22,4 +23,8 @@ export class Department {
 
     @DeleteDateColumn()
     deleted_at:Date
+
+    @OneToMany(()=>User,(user)=>user.department)
+    users:User[]
+
 }

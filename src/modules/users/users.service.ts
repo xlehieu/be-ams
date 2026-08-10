@@ -19,7 +19,7 @@ export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
-    private readonly redisService: RedisService
+    private readonly redisService: RedisService,
   ) {}
 
   create(createUserDto: CreateUserDto, curUser: CurrentUserType) {
@@ -37,7 +37,7 @@ export class UsersService {
     return this.userRepository.find();
   }
 
-  async findOne(options: FindOneOptions<User>,) {    
+  async findOne(options: FindOneOptions<User>) {
     return this.userRepository.findOne(options);
   }
 
@@ -45,9 +45,12 @@ export class UsersService {
     if (curUser.role === USER_ROLE.USER && curUser.id !== id) {
       throw new ForbiddenException();
     }
-    const cache = await this.redisService.get<User>(CACHE_SCOPE.USER,`detail:${id}`)
-    if(cache){
-      return cache
+    const cache = await this.redisService.get<User>(
+      CACHE_SCOPE.USER,
+      `detail:${id}`,
+    );
+    if (cache) {
+      return cache;
     }
     const result = await this.userRepository.findOne({
       where: { id },
@@ -55,28 +58,50 @@ export class UsersService {
     if (!result) {
       throw new NotFoundException(`User không tồn tại`);
     }
-    const {password_hash,...user}=result
-    await this.redisService.set(CACHE_SCOPE.USER,`detail:${id}`,user)
+    const { password_hash, ...user } = result;
+    await this.redisService.set(CACHE_SCOPE.USER, `detail:${id}`, user);
     return user;
   }
 
-  async update(id: number, updateUserDto: UpdateUserDto, curUser: CurrentUserType) {
-    if (curUser.role === USER_ROLE.USER && curUser.id !== id) {
+  async update(
+    id: number,
+    updateUserDto: UpdateUserDto,
+    curUser: CurrentUserType,
+  ) {
+    if (
+      (curUser.role === USER_ROLE.USER && curUser.id !== id) ||
+      updateUserDto.role === USER_ROLE.ADMIN ||
+      (updateUserDto.role === USER_ROLE.MANAGER &&
+        curUser.role === USER_ROLE.USER)
+    ) {
       throw new ForbiddenException();
     }
-    await this.userRepository.update(id, updateUserDto);
-    await this.redisService.bumpVersion(CACHE_SCOPE.USER,`detail:${id}`)
-    await this.redisService.bumpVersion(CACHE_SCOPE.AUTH,`profile:${id}`)
-    return this.findById(id,curUser);
+
+    const user = await this.findById(id, curUser);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    Object.assign(user, updateUserDto);
+    await this.userRepository.save(user);
+    await this.redisService.bumpVersion(CACHE_SCOPE.USER, `detail:${id}`);
+    await this.redisService.bumpVersion(CACHE_SCOPE.AUTH, `profile:${id}`);
+
+    return user;
   }
 
   async remove(id: number) {
-    const result = await this.userRepository.softDelete(id);
-    if(result.affected===0){
-      throw new NotFoundException()
+    const user = await this.userRepository.findOne({
+      where: { id },
+    });
+    if(!user){
+      throw new NotFoundException();
     }
+    else if (user.role === USER_ROLE.ADMIN){
+      throw new ForbiddenException()
+    }
+    await this.userRepository.softDelete(id);
     return {
-      message:"Xóa user thành công"
-    }
+      message: 'Xóa user thành công',
+    };
   }
 }
