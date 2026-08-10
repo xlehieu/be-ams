@@ -8,6 +8,7 @@ import { AssetCategoriesModule } from './modules/asset-categories/asset-categori
 import { RedisModule } from './modules/redis/redis.module';
 import { KafkaModule } from './modules/kafka/kafka.module';
 import { MailModule } from './modules/mail/mail.module';
+import { EscfModule } from './modules/escf/escf.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { MailModule } from './modules/mail/mail.module';
     RedisModule,
     KafkaModule,
     MailModule,
+    EscfModule,
   ],
   controllers: [],
   providers: [],
