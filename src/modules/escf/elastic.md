@@ -10,8 +10,8 @@ Trước khi viết dòng code nào, cần hiểu rõ ES khác Postgres ở đi�
 
 - [X] Hiểu ES là **search engine dựa trên Lucene**, không phải database quan hệ — không có transaction/ACID mạnh như Postgres
 - [X] Hiểu khái niệm **inverted index** (index ngược) — vì sao search full-text nhanh hơn `LIKE '%...%'` của SQL rất nhiều
-- [ ] Hiểu **document, index, mapping** tương ứng gì với **row, table, schema** trong Postgres
-- [ ] Hiểu vì sao ES **không nên là nguồn dữ liệu chính (source of truth)** — Postgres vẫn là nơi lưu dữ liệu gốc, ES chỉ là bản sao tối ưu cho search
+- [X] Hiểu **document, index, mapping** tương ứng gì với **row, table, schema** trong Postgres
+- [X] Hiểu vì sao ES **không nên là nguồn dữ liệu chính (source of truth)** — Postgres vẫn là nơi lưu dữ liệu gốc, ES chỉ là bản sao tối ưu cho search
 - [ ] Đọc qua tài liệu chính thức: https://www.elastic.co/guide/en/elasticsearch/reference/current/elasticsearch-intro.html
 
 **Câu hỏi tự kiểm tra:** Nếu ES bị mất dữ liệu hoàn toàn, hệ thống của bạn có bị mất dữ liệu thật không? (Nếu có → bạn đang dùng sai vai trò của ES)
@@ -20,14 +20,16 @@ Trước khi viết dòng code nào, cần hiểu rõ ES khác Postgres ở đi�
 
 ## Giai đoạn 1 — Vận hành cơ bản (CRUD document)
 
-- [ ] Cài ES local bằng Docker (`docker-compose` với `elasticsearch` + `kibana`)
-- [ ] Làm quen Kibana Dev Tools (giao diện chạy query thay vì curl)
-- [ ] Thực hành CRUD document cơ bản:
+- [X] Cài ES local bằng Docker (`docker-compose` với `elasticsearch` + `kibana`)
+- [X] Làm quen Kibana Dev Tools (giao diện chạy query thay vì curl)
+- [X] Thực hành CRUD document cơ bản:
   - `PUT /index/_doc/1` — tạo/ghi đè document
   - `GET /index/_doc/1` — lấy document theo ID
   - `POST /index/_update/1` — update một phần
   - `DELETE /index/_doc/1` — xoá document
-- [ ] Hiểu sự khác nhau giữa `index API` (ghi đè toàn bộ) và `update API` (merge một phần)
+  NOTE: - Đã học thêm pagination (tối đa cho from+size = 10000) => dùng search_after - lấy data của sort và truyền ngược lại vào search_after để ES so sánh
+  
+- [X-V] Hiểu sự khác nhau giữa `index API` (ghi đè toàn bộ) và `update API` (merge một phần)
 - [ ] Thực hành `_bulk API` — insert/update/delete hàng loạt trong 1 request (bắt buộc phải biết vì dữ liệu thật luôn là hàng nghìn/hàng triệu record)
 - [ ] Hiểu `_id` tự sinh vs `_id` tự đặt (nên dùng ID từ Postgres làm `_id` trong ES để dễ đồng bộ)
 
