@@ -17,6 +17,13 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
     const status = exception.getStatus();
+
+    // trường hợp validation pipe trả message thì nó trả trong getResponse()
+    const exceptionResponse = exception.getResponse();
+    const message =
+      typeof exceptionResponse === 'string'
+        ? exceptionResponse
+        : (exceptionResponse as any).message || exception.message;
     this.logger.error(
       `${request.method} ${request.url}`,
       exception instanceof Error ? exception.stack : String(exception),
@@ -24,7 +31,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
     return response.status(status).json({
       success: false,
       statusCode: status,
-      message: exception.message,
+      message: message,
     });
   }
 }
