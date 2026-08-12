@@ -1,15 +1,15 @@
 import { Module } from '@nestjs/common';
-import { UsersModule } from './modules/users/users.module';
-import { AuthModule } from './modules/auth/auth.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { DepartmentsModule } from './modules/departments/departments.module';
 import { AssetCategoriesModule } from './modules/asset-categories/asset-categories.module';
-import { RedisModule } from './modules/redis/redis.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { DepartmentsModule } from './modules/departments/departments.module';
+import { ErrorModule } from './modules/error/error.module';
+import { EscfModule } from './modules/escf/escf.module';
 import { KafkaModule } from './modules/kafka/kafka.module';
 import { MailModule } from './modules/mail/mail.module';
-import { EscfModule } from './modules/escf/escf.module';
-
+import { RedisModule } from './modules/redis/redis.module';
+import { UsersModule } from './modules/users/users.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -27,7 +27,10 @@ import { EscfModule } from './modules/escf/escf.module';
         password: configService.get<string>('DB_PASSWORD'),
         database: configService.get<string>('DB_NAME'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        synchronize: configService.get<string>('NODE_ENV') === 'development' ? true : false,
+        synchronize:
+          configService.get<string>('NODE_ENV') === 'development'
+            ? true
+            : false,
         // logging: true,
         autoLoadEntities: true,
       }),
@@ -40,6 +43,7 @@ import { EscfModule } from './modules/escf/escf.module';
     KafkaModule,
     MailModule,
     EscfModule,
+    ErrorModule,
   ],
   controllers: [],
   providers: [],

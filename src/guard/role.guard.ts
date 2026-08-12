@@ -19,6 +19,6 @@ export class RolesGuard implements CanActivate {
     // lấy từ request guard verify token
     const { user } = context.switchToHttp().getRequest();
     if(requiredRoles.includes(ALL_ROLES)) return true
-    return requiredRoles.some((role) => user.role === role);
+    return requiredRoles.some((role) => user?.role === role);
   }
 }

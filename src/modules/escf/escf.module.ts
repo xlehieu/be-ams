@@ -11,10 +11,10 @@ import { EscfController } from './escf.controller';
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         node: configService.get<string>('ELASTICSEARCH_NODE', 'http://localhost:9200'),
-        // auth: {
-        //   username: configService.get('ELASTICSEARCH_USERNAME'),
-        //   password: configService.get('ELASTICSEARCH_PASSWORD'),
-        // },
+        auth: {
+          username: configService.get<string>('ELASTICSEARCH_USERNAME') as string,
+          password: configService.get<string>('ELASTICSEARCH_PASSWORD') as string,
+        },
         maxRetries: 3,
         requestTimeout: 30000,
       }),
