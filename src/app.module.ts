@@ -10,6 +10,7 @@ import { KafkaModule } from './modules/kafka/kafka.module';
 import { MailModule } from './modules/mail/mail.module';
 import { RedisModule } from './modules/redis/redis.module';
 import { UsersModule } from './modules/users/users.module';
+import { AssetsModule } from './modules/assets/assets.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -44,6 +45,7 @@ import { UsersModule } from './modules/users/users.module';
     MailModule,
     EscfModule,
     ErrorModule,
+    AssetsModule,
   ],
   controllers: [],
   providers: [],

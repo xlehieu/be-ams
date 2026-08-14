@@ -1,4 +1,5 @@
 import { USER_ROLE } from '@/enums/user-role.enum';
+import { Asset } from '@/modules/assets/entities/asset.entity';
 import { Department } from '@/modules/departments/entities/department.entity';
 import { Exclude } from 'class-transformer';
 import {
@@ -8,6 +9,7 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -39,10 +41,13 @@ export class User {
 
   @ManyToOne(() => Department, { onDelete: 'SET NULL', nullable: true })
   @JoinColumn({ name: 'department_id' })
-  department: Department | null;
+  department: Department;
 
   @Column({ name: 'department_id', nullable: true })
-  department_id: number | null;
+  department_id: number;
+
+  @OneToMany(() => Asset, (asset) => asset.current_holder)
+  holding_assets: Asset[];
 
   @CreateDateColumn()
   created_at: Date;

@@ -2,32 +2,39 @@
 import { Inject, Injectable } from '@nestjs/common';
 import Redis from 'ioredis';
 
+type ScopePart = string | number | object;
+type Scope = ScopePart | ScopePart[];
+
 @Injectable()
 export class RedisService {
   constructor(@Inject('REDIS_CLIENT') private readonly redis: Redis) {}
 
-  async getVersion(scope: string, suffix: string): Promise<number> {
-    const v = await this.redis.get(`version:${scope}:${suffix}`);
-    // đặt mặc định là về 0 => bởi vì ở đây là redis bản chất chưa có key này
-    // lúc tăng incr lên thì là 1 => lại trả về key 1 nếu ở đây trả về default 1
-    // return v ? Number(v) : 1;
+  private normalizeScope(scope: Scope): string {
+    const parts = Array.isArray(scope) ? scope : [scope];
+    return parts
+      .map((p) => (typeof p === 'object' ? JSON.stringify(p) : String(p)))
+      .join(':');
+  }
+
+  async getVersionScope(scope: Scope): Promise<number> {
+    const key = this.normalizeScope(scope);
+    const v = await this.redis.get(`versionSC:${key}`);
     return v ? Number(v) : 0;
   }
 
-  // Tăng version
-  async bumpVersion(scope: string, suffix: string): Promise<void> {
-    await this.redis.incr(`version:${scope}:${suffix}`);
+  async bumpVersionScope(scope: Scope): Promise<void> {
+    const key = this.normalizeScope(scope);
+    await this.redis.incr(`versionSC:${key}`);
   }
 
-  // Build cache key cho chi tiết từng thằng kể cả detail
-  //=> scope => suffix > version detail
-  async buildKey(scope: string, suffix: string): Promise<string> {
-    const version = await this.getVersion(scope, suffix);
-    return `${scope}:${suffix}:v${version}`;
+  async buildKey(scope: Scope): Promise<string> {
+    const key = this.normalizeScope(scope);
+    const scopeVersion = await this.getVersionScope(scope);
+    return `${key}:v${scopeVersion}`;
   }
 
-  async get<T>(scope: string, suffix: string): Promise<T | null> {
-    const key = await this.buildKey(scope, suffix);
+  async get<T>(scope: Scope): Promise<T | null> {
+    const key = await this.buildKey(scope);
     const data = await this.redis.get(key);
     if (!data) return null;
     try {
@@ -38,12 +45,11 @@ export class RedisService {
   }
 
   async set(
-    scope: string,
-    suffix: string,
+    scope: Scope,
     value: unknown,
     ttlSeconds = 30,
   ): Promise<void> {
-    const key = await this.buildKey(scope, suffix);
+    const key = await this.buildKey(scope);
     await this.redis.set(key, JSON.stringify(value), 'EX', ttlSeconds);
   }
 

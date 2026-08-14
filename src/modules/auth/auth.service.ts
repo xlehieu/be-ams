@@ -1,19 +1,18 @@
+import { CurrentUserType } from '@/@types/auth.type';
 import {
   ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import { ProducerService } from '../kafka/producer.service';
+import { RedisService } from '../redis/redis.service';
+import { CreateUserDto } from '../users/dto/create-user.dto';
 import { User } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
 import { RegisterDto } from './dto/auth.dto';
-import { CurrentUserType } from '@/@types/auth.type';
-import { CreateUserDto } from '../users/dto/create-user.dto';
-import { RedisService } from '../redis/redis.service';
-import { CACHE_SCOPE } from '@/shared/cache-scope.const';
-import { ProducerService } from '../kafka/producer.service';
-import { ConfigService } from '@nestjs/config';
 @Injectable()
 export class AuthService {
   constructor(
@@ -21,10 +20,10 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly redisService: RedisService,
-    private readonly producerService: ProducerService
+    private readonly producerService: ProducerService,
   ) {}
 
-  async register(registerDto: RegisterDto,curUser:CurrentUserType) {
+  async register(registerDto: RegisterDto, curUser: CurrentUserType) {
     const existUser = await this.usersService.findOne({
       where: { email: registerDto.email },
     });
@@ -33,27 +32,28 @@ export class AuthService {
         'Email đã tồn tại, vui lòng sử dụng email khác',
       );
     }
-    const saltRounds = this.configService.get<string>("SALT_BCRYPT") as string;
-    const password_hash = await bcrypt.hash(registerDto.password, Number(saltRounds));
-    const newUser:CreateUserDto ={
+    const saltRounds = this.configService.get<string>('SALT_BCRYPT') as string;
+    const password_hash = await bcrypt.hash(
+      registerDto.password,
+      Number(saltRounds),
+    );
+    const newUser: CreateUserDto = {
       ...registerDto,
-      password_hash      
-    } 
-    const createdUser = await this.usersService.create(newUser,curUser);
+      password_hash,
+    };
+    const createdUser = await this.usersService.create(newUser, curUser);
     this.producerService.produce({
-      topic:"register-success",
-      messages: [
-        { value: JSON.stringify(createdUser) },
-      ],
-    })
-    return createdUser
+      topic: 'register-success',
+      messages: [{ value: JSON.stringify(createdUser) }],
+    });
+    return createdUser;
   }
 
   async validateUser(email: string, password: string) {
     const user = await this.usersService.findOne({
       where: { email },
     });
-    if(!user) throw new NotFoundException('Email hoặc mật khẩu không đúng');
+    if (!user) throw new NotFoundException('Email hoặc mật khẩu không đúng');
     const paswordMatch = user
       ? await bcrypt.compare(password, user.password_hash)
       : false;
@@ -68,16 +68,16 @@ export class AuthService {
       email: user.email,
       id: user.id,
       role: user.role,
-      department_id:user.department_id
+      department_id: user.department_id,
     };
     return {
       access_token: this.jwtService.sign(payload),
     };
   }
   async getProfile(userId: number) {
-    const cache = await this.redisService.get(CACHE_SCOPE.AUTH,`profile:${userId}`)
-    if(cache){
-      return cache
+    const cache = await this.redisService.get([User.name, 'detail', userId]);
+    if (cache) {
+      return cache;
     }
     const result = await this.usersService.findOne({
       where: { id: userId },
@@ -85,8 +85,8 @@ export class AuthService {
     if (!result) {
       throw new NotFoundException('Người dùng không tồn tại');
     }
-    const {password_hash,...user}=result
-    await this.redisService.set(CACHE_SCOPE.AUTH,`profile:${userId}`,user)
+    const { password_hash, ...user } = result;
+    await this.redisService.set([User.name, 'detail', userId], user);
     // instance của User => tự bỏ password_hash đã dùng ở main.ts
     return user;
   }

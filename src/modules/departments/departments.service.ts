@@ -32,12 +32,12 @@ export class DepartmentsService {
       qb.andWhere(
         'department.name ILIKE :keyword OR department.department_code ILIKE :keyword',
         {
-          keyword: `%${query.keyword}`,
+          keyword: `%${query.keyword}%`,
         },
       );
     }
     qb.orderBy('department.updated_at', 'DESC')
-      .orderBy('department.id', 'DESC')
+      .addOrderBy('department.id', 'DESC')
       .skip(query.offset)
       .take(query.page_size);
     const [data, total] = await qb.getManyAndCount();

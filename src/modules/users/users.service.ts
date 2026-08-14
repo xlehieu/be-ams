@@ -45,21 +45,22 @@ export class UsersService {
     if (curUser.role === USER_ROLE.USER && curUser.id !== id) {
       throw new ForbiddenException();
     }
-    const cache = await this.redisService.get<User>(
-      CACHE_SCOPE.USER,
-      `detail:${id}`,
-    );
+    const cacheKey = [User.name,"detail",id]
+    const cache = await this.redisService.get<User>(cacheKey);
     if (cache) {
       return cache;
     }
     const result = await this.userRepository.findOne({
       where: { id },
+      relations:{
+        department:true
+      }
     });
     if (!result) {
       throw new NotFoundException(`User không tồn tại`);
     }
     const { password_hash, ...user } = result;
-    await this.redisService.set(CACHE_SCOPE.USER, `detail:${id}`, user);
+    await this.redisService.set(cacheKey, user);
     return user;
   }
 
@@ -83,9 +84,7 @@ export class UsersService {
     }
     Object.assign(user, updateUserDto);
     await this.userRepository.save(user);
-    await this.redisService.bumpVersion(CACHE_SCOPE.USER, `detail:${id}`);
-    await this.redisService.bumpVersion(CACHE_SCOPE.AUTH, `profile:${id}`);
-
+    await this.redisService.bumpVersionScope([User.name,"detail",id]);
     return user;
   }
 
