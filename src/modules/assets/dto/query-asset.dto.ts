@@ -24,4 +24,9 @@ export class ListQueryAssets extends ListQueryDto {
     message: 'purchase_to_date phải đúng định dạng YYYY-MM-DD',
   })
   purchase_to_date: string;
+
+  @IsOptional()
+  @Type(() => Boolean)
+  @ApiPropertyOptional({ example: false })
+  current_holder_id: boolean;
 }

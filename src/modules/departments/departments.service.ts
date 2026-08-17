@@ -13,6 +13,7 @@ import { USER_ROLE } from '@/enums/user-role.enum';
 import { UsersService } from '../users/users.service';
 import { ListQueryDto } from '@/shared/query.dto';
 import { buildPagination } from '@/shared/buildPagination';
+import { buildAndWhereQueryBuilder } from '@/common/typeorm/query-builder';
 
 @Injectable()
 export class DepartmentsService {
@@ -26,16 +27,15 @@ export class DepartmentsService {
   }
 
   async findAll(query: ListQueryDto) {
-    const qb = this.departmentRepository.createQueryBuilder('department');
-
-    if (query.keyword) {
-      qb.andWhere(
-        'department.name ILIKE :keyword OR department.department_code ILIKE :keyword',
-        {
-          keyword: `%${query.keyword}%`,
-        },
-      );
-    }
+    const qb = buildAndWhereQueryBuilder(this.departmentRepository,{
+      alias:"department",
+      queryList:[{
+        key:["name","department_code"],
+        operatorCf:"ilike",
+        paramName:"keyword",
+        value:query.keyword
+      }]
+    })
     qb.orderBy('department.updated_at', 'DESC')
       .addOrderBy('department.id', 'DESC')
       .skip(query.offset)

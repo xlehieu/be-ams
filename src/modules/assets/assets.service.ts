@@ -30,6 +30,7 @@ export class AssetsService {
       asset_category_id,
       purchase_from_date,
       purchase_to_date,
+      current_holder_id
     } = query;
     const cacheKey = [Asset.name, 'list', query];
     const cacheData = await this.redisService.get(cacheKey);
@@ -42,21 +43,27 @@ export class AssetsService {
         {
           key: ['asset_code', 'asset_name'],
           operatorCf: 'ilike',
-          param_name: 'keyword',
+          paramName: 'keyword',
           value: keyword,
         },
         {
           key: 'asset_category_id',
           operatorCf: 'eq',
-          param_name: 'asset_category_id',
+          paramName: 'asset_category_id',
           value: asset_category_id,
         },
         {
           key: 'purchase_date',
           operatorCf: 'compare_date',
-          param_name: 'purchase_date',
+          paramName: 'purchase_date',
           value: [purchase_from_date, purchase_to_date],
         },
+        {
+          key:"current_holder_id",
+          operatorCf:'null_check',
+          paramName:"",
+          value:current_holder_id
+        }
       ],
     });
     qb.orderBy('asset.updated_at', 'DESC')

@@ -11,6 +11,7 @@ import { RedisService } from '../redis/redis.service';
 import { CreateAssetCategoryDto } from './dto/create-asset-category.dto';
 import { UpdateAssetCategoryDto } from './dto/update-asset-category.dto';
 import { AssetCategory } from './entities/asset-category.entity';
+import { buildAndWhereQueryBuilder } from '@/common/typeorm/query-builder';
 
 @Injectable()
 export class AssetCategoriesService {
@@ -42,32 +43,32 @@ export class AssetCategoriesService {
 
   async findAll(query: ListQueryDto) {
     const { offset, page, page_size, keyword } = query;
-    const cacheKey = [AssetCategory.name, 'list', query]
-     const cacheData = await this.redisService.get<AssetCategory[]>(cacheKey);
+    const cacheKey = [AssetCategory.name, 'list', query];
+    const cacheData = await this.redisService.get<AssetCategory[]>(cacheKey);
     if (cacheData) {
       return cacheData;
     }
     // tên asset_category phải giống tên với bên trong query builder
-    const qb =
-      this.assetCategoryRepository.createQueryBuilder('asset_category');
-
-    if (keyword) {
-      qb.andWhere(
-        'asset_category.asset_category_name ILIKE :keyword OR asset_category.asset_category_code ILIKE :keyword',
+    const qb = buildAndWhereQueryBuilder(this.assetCategoryRepository, {
+      alias: 'asset_category',
+      queryList: [
         {
-          keyword: `%${keyword}%`,
+          key: ['asset_category_name', 'asset_category_code'],
+          operatorCf: 'ilike',
+          paramName: 'keyword',
+          value: keyword,
         },
-      );
-    }
+      ],
+    });
     qb.orderBy('asset_category.updated_at', 'DESC')
       .addOrderBy('asset_category.id', 'DESC')
       .skip(offset)
       .take(page_size);
 
     const [data, total] = await qb.getManyAndCount();
-    const result= buildPagination(data, total, page, page_size);
-    await this.redisService.set(cacheKey,result)
-    return result
+    const result = buildPagination(data, total, page, page_size);
+    await this.redisService.set(cacheKey, result);
+    return result;
   }
 
   async findById(id: number) {
