@@ -47,3 +47,9 @@
 - [ ] Security (Helmet, CORS, Rate Limit, XSS/SQLi)
 - [ ] Performance (Pagination, Cache, Connection Pool)
 - [ ] CI/CD & Triển khai (VPS/Cloud, Nginx, PM2)
+
+## Học thêm về elasticsearch
+- [V] Kiến thức về index, cách lưu data của es - basic
+- [ ] Code base ES, cấu hình service dùng mọi nơi thay vì mỗi module lại cấu hình lại
+- [ ] Lưu data và search tới ES
+- [ ] Mapping

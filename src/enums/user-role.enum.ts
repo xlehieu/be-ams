@@ -2,4 +2,5 @@ export enum USER_ROLE {
   ADMIN = "ADMIN",
   MANAGER = "MANAGER",
   USER = "USER",
+  SYSTEM_CONFIG="SYSTEM_CONFIG"
 }

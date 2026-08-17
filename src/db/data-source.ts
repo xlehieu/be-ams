@@ -1,6 +1,5 @@
-import { DataSource } from 'typeorm';
 import * as dotenv from 'dotenv';
-import { Department } from '@/modules/departments/entities/department.entity';
+import { DataSource } from 'typeorm';
 
 dotenv.config();
 // cấu hình datasource để kết nối khi seed data
@@ -11,7 +10,6 @@ export const dataSourceOptions = new DataSource({
   username: process.env.DB_USERNAME,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  entities: [Department],
   logging: true,
   synchronize: false,
 });

@@ -1,0 +1,62 @@
+import { Injectable, Logger } from '@nestjs/common';
+import { ElasticsearchService } from '@nestjs/elasticsearch';
+import { ESError } from '../error/es.error';
+import dataSourceOptions from '@/db/data-source';
+
+@Injectable()
+export class ReindexService {
+  private readonly logger = new Logger(ReindexService.name);
+  constructor(private readonly esService: ElasticsearchService) {}
+
+  async reindex(indexName: string) {
+    await this.ensureIndex(indexName);
+
+    const BATCH_SIZE = 1000;
+    const lastId = 0;
+    await dataSourceOptions.initialize();
+    while (true) {
+      // dùng pagination con trỏ
+      const rows = await dataSourceOptions.query(
+        `SELECT * FROM $1 WHERE id > $2 ORDER BY id ASC LIMIT $3`,
+        [indexName, lastId, BATCH_SIZE],
+      );
+      if (rows.length === 0) break;
+
+      await this.bulkIndex(indexName, rows);
+    }
+    await dataSourceOptions.destroy();
+    this.logger.log(`REINDEX ${indexName} thành công`);
+  }
+  private async ensureIndex(indexName: string): Promise<void> {
+    const exists = await this.esService.indices.exists({
+      index: indexName,
+    });
+
+    if (!exists) {
+      await this.esService.indices.create({ index: indexName });
+      this.logger.log(`Đã tạo index: ${indexName}`);
+    }
+  }
+  private async bulkIndex(indexName: string, rows: any[]) {
+    const operations = rows.flatMap((row) => [
+      {
+        index: {
+          _index: indexName,
+          _id: String(row.id), // lấy id của data trong DB làm id trong es luôn
+        },
+      },
+      { ...row },
+    ]);
+    const result = await this.esService.bulk({
+      refresh: false, // nếu là false thì ES sẽ tạo 1 segment (thằng này để lưu data) - để cho có thể search được luôn thay vì đợi bulk xong=> nếu ta đặt false thì đợi bulk xong mới search được
+      operations,
+    });
+    this.logger.log(`reindex bulk ${result.items.length} done`);
+    if (result.errors) {
+      const failedItems = result.items.filter((item) => item.index?.error);
+      throw new ESError(
+        `Có ${failedItems.length} lỗi khi bulk index ${JSON.stringify(failedItems.slice(0, 5))}`,
+      );
+    }
+  }
+}

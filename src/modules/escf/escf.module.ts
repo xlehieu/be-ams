@@ -3,6 +3,7 @@ import { ElasticsearchModule } from '@nestjs/elasticsearch';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { EscfService } from './escf.service';
 import { EscfController } from './escf.controller';
+import { ReindexService } from './reindex.service';
 
 @Module({
   imports: [
@@ -21,7 +22,7 @@ import { EscfController } from './escf.controller';
     }),
   ],
   controllers:[EscfController],
-  providers:[EscfService],
+  providers:[EscfService,ReindexService],
   exports: [ElasticsearchModule],
 })
 export class EscfModule {}
