@@ -1,3 +1,5 @@
+import { Department } from '@/modules/departments/entities/department.entity';
+import { User } from '@/modules/users/entities/user.entity';
 import * as dotenv from 'dotenv';
 import { DataSource } from 'typeorm';
 
@@ -10,6 +12,7 @@ export const dataSourceOptions = new DataSource({
   username: process.env.DB_USERNAME,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
+  entities: [__dirname + '/../**/*.entity{.ts,.js}'],
   logging: true,
   synchronize: false,
 });

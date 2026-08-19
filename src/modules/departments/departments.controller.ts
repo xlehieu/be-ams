@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+} from '@nestjs/common';
 import { DepartmentsService } from './departments.service';
 import { CreateDepartmentDto } from './dto/create-department.dto';
 import { UpdateDepartmentDto } from './dto/update-department.dto';
@@ -19,20 +28,23 @@ export class DepartmentsController {
   }
 
   @Get()
-  @Roles(USER_ROLE.ADMIN,USER_ROLE.MANAGER)
-  findAll(@Query() query:ListQueryDto) {
-    console.log("queryqueryqueryquery",query)
-    return this.departmentsService.findAll(query);
+  @Roles(USER_ROLE.ADMIN, USER_ROLE.MANAGER)
+  async findAll(@Query() query: ListQueryDto) {
+    const data = await this.departmentsService.findAll(query);
+    return data;
   }
 
   @Get(':id')
   @Roles(ALL_ROLES)
-  findById(@Param('id') id: number, @CurrentUser() curUser:CurrentUserType) {
-    return this.departmentsService.findById(id,curUser);
+  findById(@Param('id') id: number, @CurrentUser() curUser: CurrentUserType) {
+    return this.departmentsService.findById(id, curUser);
   }
 
   @Patch(':id')
-  update(@Param('id') id: number, @Body() updateDepartmentDto: UpdateDepartmentDto) {
+  update(
+    @Param('id') id: number,
+    @Body() updateDepartmentDto: UpdateDepartmentDto,
+  ) {
     return this.departmentsService.update(id, updateDepartmentDto);
   }
 

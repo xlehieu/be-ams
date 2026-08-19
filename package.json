@@ -1,5 +1,5 @@
 {
-  "name": "be-to-mo-ghe",
+  "name": "be-ams",
   "version": "0.0.1",
   "description": "",
   "author": "",
@@ -21,7 +21,7 @@
     "seed": "ts-node -r tsconfig-paths/register src/db/seeds/main.seeder.ts"
   },
   "dependencies": {
-    "@elastic/elasticsearch": "^9.5.0",
+    "@elastic/elasticsearch": "^8.15.0",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.4",
     "@nestjs/core": "^11.0.1",
