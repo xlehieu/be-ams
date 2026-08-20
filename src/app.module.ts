@@ -32,7 +32,7 @@ import { AssetsModule } from './modules/assets/assets.module';
           configService.get<string>('NODE_ENV') === 'development'
             ? true
             : false,
-        // logging: true,
+        logging: false,
         autoLoadEntities: true,
       }),
     }),

@@ -1,3 +1,4 @@
+import { EsExceptionFilter } from '@/filters/es-exeption.filter';
 import { HttpExceptionFilter } from '@/filters/http-exception.filter';
 import { PostgresExceptionFilter } from '@/filters/postgres-exception.filter';
 import { UnknownExceptionFilter } from '@/filters/unknown-exception.filter';
@@ -18,6 +19,10 @@ import { APP_FILTER } from '@nestjs/core';
     {
       provide: APP_FILTER,
       useClass: HttpExceptionFilter,
+    },
+    {
+      provide: APP_FILTER,
+      useClass: EsExceptionFilter,
     },
   ],
 })
