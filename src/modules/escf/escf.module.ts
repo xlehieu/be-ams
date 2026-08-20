@@ -4,6 +4,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { EscfService } from './escf.service';
 import { EscfController } from './escf.controller';
 import { ReindexService } from './reindex.service';
+import { SearchESService } from './searchES.service';
+import { SearchESController } from './searchES.controller';
 
 @Module({
   imports: [
@@ -21,8 +23,8 @@ import { ReindexService } from './reindex.service';
       }),
     }),
   ],
-  controllers:[EscfController],
-  providers:[EscfService,ReindexService],
+  controllers:[EscfController,SearchESController],
+  providers:[EscfService,ReindexService,SearchESService],
   exports: [ElasticsearchModule],
 })
 export class EscfModule {}
