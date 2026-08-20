@@ -78,3 +78,54 @@ export class SearchESService {
     }
   }
 }
+
+const sampleSearch ={
+  "query": {
+    // bool để kết hợp nhiều query với nhau
+    "bool": {
+      "must": [
+        // điều kiện và
+        {
+          "multi_match": {
+            "query": "ke toan",
+            "fields": ["name", "description"],
+            "fuzziness": "AUTO",
+            "operator": "or"
+          }
+        }
+      ],
+      "filter": [
+        { "term": { "status": "active" } },
+
+        { "terms": { "category.keyword": ["electronics", "phones"] } },
+
+        { "term": { "isActive": true } },
+
+        { "range": { "price": { "gte": 100, "lte": 500 } } },
+
+        { "range": { "createdAt": { "gte": "2026-01-01", "lte": "2026-12-31" } } }
+      ],
+      "must_not": [
+        { "term": { "status": "deleted" } }
+      ]
+    }
+  },
+  "sort": [
+    { "price": { "order": "asc" } },
+    { "createdAt": { "order": "desc" } },
+    { "_score": { "order": "desc" } }
+  ],
+  "from": 0,
+  "size": 20
+}
+
+// match	Full-text search 1 field
+// multi_match	Full-text search nhiều field cùng lúc
+// term	So khớp chính xác 1 giá trị
+// terms	So khớp chính xác nhiều giá trị (OR)
+// range	Lọc khoảng (số, ngày)
+// bool	Kết hợp nhiều điều kiện (must, filter, should, must_not)
+// wildcard	Tìm theo pattern có *, ?
+// match_all	Lấy tất cả, không điều kiện
+// exists	Kiểm tra field có tồn tại/có giá trị không
+// prefix	Tìm theo tiền tố (bắt đầu bằng...)
