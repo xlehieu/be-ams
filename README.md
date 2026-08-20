@@ -1,45 +1,45 @@
 # ✅ Checklist học NestJS
 
 ## Core NestJS
-- [V] Module
-- [V] Controller
-- [V] Service
-- [V] Dependency Injection (Provider, Scope, Custom Provider)
+- [X] Module
+- [X] Controller
+- [X] Service
+- [X] Dependency Injection (Provider, Scope, Custom Provider)
 
 ## Request Pipeline
 - [ ] Middleware
-- [V] Guard
-- [V] Interceptor
-- [V] Pipe
-- [V] Filter (Exception Filter)
+- [X] Guard
+- [X] Interceptor
+- [X] Pipe
+- [X] Filter (Exception Filter)
 
 ## Validation & Exception
-- [V] DTO + class-validator
-- [V] Global Pipe (ValidationPipe)
-- [V] Exception (BadRequest, NotFound, Conflict...)
-- [V] Custom Exception Filter - QueryFailedError(typeorm - postgres) - HTTPException của nestjs - Unkownerror 
+- [X] DTO + class-validator
+- [X] Global Pipe (ValidationPipe)
+- [X] Exception (BadRequest, NotFound, Conflict...)
+- [X] Custom Exception Filter - QueryFailedError(typeorm - postgres) - HTTPException của nestjs - Unkownerror 
 
 ## Database
-- [V] PostgreSQL (TypeORM) - đang ở mức cơ bản
+- [X] PostgreSQL (TypeORM) - đang ở mức cơ bản
 - [ ] Transaction, Migration, Relation
 
 ## Authentication & Authorization
-- [V] JWT Auth (Register/Login)
-- [V] Passport + bcrypt
-- [V] RBAC (Role Guard)
+- [X] JWT Auth (Register/Login)
+- [X] Passport + bcrypt
+- [X] RBAC (Role Guard)
 - [ ] ABAC / CASL
 
 ## Tính năng bổ sung
 - [ ] Upload File (Multer, S3/Cloudinary)
-- [V] Swagger
-- [V] Config (.env, ConfigModule, Joi)
+- [X] Swagger
+- [X] Config (.env, ConfigModule, Joi)
 - [ ] Logger (Pino/Winston)
 
 ## Nâng cao
-- [V] Redis Cache - Cơ bản
+- [X] Redis Cache - Cơ bản
 - [ ] Cron / Schedule
 - [ ] Event Emitter
-- [V] Microservice Kafka - hiểu producer => brokers => bắn đến các consumers
+- [X] Microservice Kafka - hiểu producer => brokers => bắn đến các consumers
 
 ## DevOps & Chất lượng
 - [ ] Docker & docker-compose
@@ -49,7 +49,7 @@
 - [ ] CI/CD & Triển khai (VPS/Cloud, Nginx, PM2)
 
 ## Học thêm về elasticsearch
-- [V] Kiến thức về index, cách lưu data của es - basic
+- [X] Kiến thức về index, cách lưu data của es - basic
 - [ ] Code base ES, cấu hình service dùng mọi nơi thay vì mỗi module lại cấu hình lại
-- [ ] Lưu data và search tới ES
-- [ ] Mapping
+- [X] Lưu data và search tới ES - dùng bulk để lưu nhiều bản ghi ở operations
+- [X] Mapping
