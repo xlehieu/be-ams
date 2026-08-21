@@ -1,15 +1,17 @@
 import { Public } from '@/decorators/public.decoratetor';
 import { Roles } from '@/decorators/role.decoratetor';
 import { USER_ROLE } from '@/enums/user-role.enum';
-import { Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { ElasticsearchService } from '@nestjs/elasticsearch';
 import { ReindexService } from './reindex.service';
+import { ProducerService } from '../kafka/producer.service';
 
 @Controller('es')
 export class EscfController {
   constructor(
     private readonly esService: ElasticsearchService,
     private readonly reindexService: ReindexService,
+    private readonly providerService: ProducerService,
   ) {}
 
   // GET /es/ping -> kiểm tra nhanh sống/chết
@@ -54,7 +56,25 @@ export class EscfController {
 
   @Post('reindex/:indexName')
   @Roles(USER_ROLE.SYSTEM_CONFIG)
-  async reindexES(@Param('indexName') indexName: string) {
-    await this.reindexService.reindex(indexName);
+  async reindexES(
+    @Param('indexName') indexName: string,
+    @Body() mappings?: any,
+  ) {
+    // await this.reindexService.reindex(indexName);
+    await this.providerService.produce({
+      topic: 'reindexES',
+      messages: [
+        {
+          value: JSON.stringify({
+            aliasName: indexName,
+            mappings,
+          }),
+        },
+      ],
+    });
+    return {
+      message: `Reindex request for "${indexName}" has been queued`,
+      aliasName: indexName,
+    };
   }
 }

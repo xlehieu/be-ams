@@ -34,7 +34,6 @@ export class ReindexService {
       `REINDEX ${aliasName}: ${dbCount} records thành công -> ${newIndex}`,
     );
   }
-  async reindexNoMapping(aliasName: string) {}
   // check xem db có table này không=> table sẽ trùng với thằng alias không cho trùng tên index nữa
   private async validateTableExists(tableName: string): Promise<void> {
     const initialized = dataSourceOptions.isInitialized;

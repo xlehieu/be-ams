@@ -6,6 +6,8 @@ import { EscfController } from './escf.controller';
 import { ReindexService } from './reindex.service';
 import { SearchESService } from './searchES.service';
 import { SearchESController } from './searchES.controller';
+import { KafkaModule } from '../kafka/kafka.module';
+import { ReindexConsumer } from './reindex.consumer';
 
 @Module({
   imports: [
@@ -22,9 +24,10 @@ import { SearchESController } from './searchES.controller';
         requestTimeout: 30000,
       }),
     }),
+    KafkaModule
   ],
   controllers:[EscfController,SearchESController],
-  providers:[EscfService,ReindexService,SearchESService],
+  providers:[EscfService,ReindexService,SearchESService,ReindexConsumer],
   exports: [ElasticsearchModule],
 })
 export class EscfModule {}
